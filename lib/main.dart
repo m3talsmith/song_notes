@@ -30,21 +30,35 @@ class _AppState extends State<App> {
             title: const Text('Song Notes'),
           ),
           body: Center(
-            child: ListView(
+            child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              children: [
-                ...buttons.map((button) => Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: button,
-                    ))
-              ],
+              child: Row(
+                children: [
+                  ...buttons.map((button) => Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: button,
+                      ))
+                ],
+              ),
             ),
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
               showModalBottomSheet(
-                  context: context,
-                  builder: (context) => const NoteButtonForm());
+                context: context,
+                builder: (context) => NoteButtonForm(
+                  onSave: (name) {
+                    setState(() {
+                      buttons.add(
+                        IconButton(
+                          onPressed: () {},
+                          icon: const Icon(Icons.folder),
+                        ),
+                      );
+                    });
+                  },
+                ),
+              );
             },
             child: const Icon(Icons.add),
           ),
@@ -55,7 +69,9 @@ class _AppState extends State<App> {
 }
 
 class NoteButtonForm extends StatefulWidget {
-  const NoteButtonForm({super.key});
+  const NoteButtonForm({super.key, this.onSave});
+
+  final Function(String name)? onSave;
 
   @override
   State<NoteButtonForm> createState() => _NoteButtonFormState();
@@ -67,18 +83,30 @@ class _NoteButtonFormState extends State<NoteButtonForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Column(
-      children: [
-        TextField(
-          onChanged: (value) => setState(() {
-            _name = value;
-          }),
-          decoration: const InputDecoration(
-            labelText: 'Name',
-            icon: Icon(Icons.folder),
+        body: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          TextField(
+            onChanged: (value) => setState(() {
+              _name = value;
+            }),
+            decoration: const InputDecoration(
+              labelText: 'Name',
+              icon: Icon(Icons.folder),
+            ),
           ),
-        ),
-      ],
+          Padding(
+            padding: const EdgeInsets.only(top: 16.0),
+            child: FilledButton(
+                onPressed: () {
+                  widget.onSave?.call(_name ?? '');
+                  Navigator.pop(context);
+                },
+                child: const Text('Save')),
+          )
+        ],
+      ),
     ));
   }
 }
